@@ -1,11 +1,12 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math
+import csv
 
 turb = 46
 gen = 2
-n = turb
+n = turb + gen
 
 space = 500
 tol = 50
@@ -36,7 +37,13 @@ for i in range(n):
 generator_x = [random.random()*space,random.random()*space]
 generator_y = [random.random()*space,random.random()*space]
 
+data = zip([i for i in range(n+gen)],turbines_x,turbines_y)
+with open('Coordinates.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['i', 'x', 'y'])
+    writer.writerows(data)
+
 plt.scatter(turbines_x,turbines_y)
-plt.scatter(generator_x,generator_y,color='red')
+plt.scatter(turbines_x,generator_y,color='red')
 plt.show()
         

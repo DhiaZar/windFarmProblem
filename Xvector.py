@@ -1,25 +1,23 @@
 from math import floor
 from collections import Counter
 
+#DEBUGGING
 turb = 46
 gene = 2
 n = turb + gene
-
-X_size = 4 * (n+1) * (n)
-
+X_size = 4 * (n**2)
 bigX = []
-
-
 with open("XvectorIndices.txt","w") as file:
     for t in range(X_size):
-        i = (floor(t/4) % n) + 1
-        j = (floor(t/(4*(n+1)))) + 1
-        k = t % 4 +1
+        i=(floor(t/n))%(n)+1
+        j=(t%n)+1
+        k=floor(t/(n**2))+1
         bigX.append(f"{i}-{j}-{k}")
         file.write(f"i: {i} , j:{j} , k:{k}\n")
 
-counts = Counter(bigX)
-duplicates = list(filter(lambda x: counts[x] > 1, counts))
-with open("XvectorDuplicates.txt","w") as file:
-    for i in duplicates:
-        file.write(i + "\n")
+##FUNCTION
+def yToX(t,n):
+    i=(floor(t/n))%(n)+1
+    j=(t%n)+1
+    k=floor(t/(n**2))+1
+    return(i,j,k)
