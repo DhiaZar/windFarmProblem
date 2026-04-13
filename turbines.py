@@ -1,6 +1,5 @@
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import random
-import numpy as np
 import math
 import csv
 
@@ -44,6 +43,6 @@ with open('Coordinates.csv', mode='w', newline='') as file:
     writer.writerows(data)
 
 plt.scatter(turbines_x,turbines_y)
-plt.scatter(turbines_x,generator_y,color='red')
+plt.scatter(generator_x,generator_y,color='red')
 plt.show()
         
