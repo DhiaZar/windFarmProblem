@@ -1,6 +1,9 @@
 from math import floor
 import numpy as np
 from turbines import dist
+import dimod
+from dwave.samplers import TabuSampler
+from chatQUBOTabu import tabu_search_qubo
 
 def yToX(t,n):
     i = floor(t/n) % n + 1
@@ -12,10 +15,12 @@ def xToY(i,j,k,n):
     return (i-1)*n + (j-1) + (k-1)*(n**2)
 
 N = 48
-L = 5
+L = 0
 Q = np.zeros((N*N*4,N*N*4))
 D = np.zeros((N,N))
-Q_qubo = {}
+Q_qubo_linear = {}
+Q_qubo_quad = {}
+
 distance_dict = {}
 with open("Coordinates.csv",'r') as f:
     for line in f:
@@ -30,16 +35,20 @@ for i in range(len(distance_dict)):
 
 
 cost = {1:500,2:700,3:900,4:1100}
-
+print("bch nebdew n3amrou fel dict ")
 for i in range(1,N+1):
     for j in range(1,N+1):
         for k in range(1,5):
             t = xToY(i,j,k,N)
             Q[t,t] += cost[k] * D[i-1,j-1] + L * (k**2) - 2*L*k
-            Q_qubo[(t,t)] += Q[t,t]
+            # if not(t in Q_qubo_linear.keys()):
+            #     Q_qubo_linear[t] = 0
+            # Q_qubo_linear[t] += cost[k] * D[i-1,j-1] + L * (k**2) - 2*L*k
             v = xToY(j,i,k,N)
             Q[v,v] += L * (k**2) + 2*L*k
-            Q_qubo[(v,v)] += Q[v,v]
+            # if not(v in Q_qubo_linear.keys()):
+            #     Q_qubo_linear[v] = 0
+            # Q_qubo_linear[v] += L * (k**2) + 2*L*k
 
 for i in range(1,N+1):
     for k in range(1,5):
@@ -48,11 +57,15 @@ for i in range(1,N+1):
                 t = xToY(i,j,k,N)
                 v = xToY(i,j2,k,N)
                 Q[t,v] += 2*L*(k**2)
-                Q_qubo[(t,v)] += Q[t,v] 
+                # if not( (t,v) in Q_qubo_quad.keys()):
+                #     Q_qubo_quad[(t,v)] = 0
+                # Q_qubo_quad[(t,v)] += 2*L*(k**2)
                 t = xToY(j,i,k,N)
                 v = xToY(j2,i,k,N)
                 Q[t,v] += 2*L*(k**2)
-                Q_qubo[(t,v)] += Q[t,v]
+                # if not( (t,v) in Q_qubo_quad.keys()):
+                #     Q_qubo_quad[(t,v)] = 0
+                # Q_qubo_quad[(t,v)] += 2*L*(k**2)
 
 for i in range(1,N+1):
     for j in range(1,N+1):
@@ -62,11 +75,15 @@ for i in range(1,N+1):
                     t = xToY(i,j,k,N)
                     v = xToY(i,j2,k2,N)
                     Q[t,v] += 2* L * k*k2
-                    Q_qubo[(t,v)] += Q[t,v]
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2* L * k*k2
                     t = xToY(j,i,k,N)
                     v = xToY(j2,i,k,N)
                     Q[t,v] += 2*L*(k*k2)
-                    Q_qubo[(t,v)] += Q[t,v]
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2*L*(k*k2)
 
 for i in range(1,N+1):
     for j in range(1,N+1):
@@ -76,22 +93,50 @@ for i in range(1,N+1):
                     t = xToY(i,j,k,N)
                     v = xToY(i,j2,k2,N)
                     Q[t,v] += 2 * L * k * k2
-                    Q_qubo[(t,v)] += Q[t,v]
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2 * L * k * k2
 
 for i in range(N-1,N+1):
     for k in range(1,5):
         for j in range(1,N-1):
             t = xToY(i,j,k,N)
             Q[t,t] += k**2 - 46*k
-            Q_qubo[(t,t)] += Q[t,t]
+            # if not( (t,v) in Q_qubo_quad.keys()):
+            #     Q_qubo_quad[(t,v)] = 0
+            # Q_qubo_quad[(t,t)] += k**2 - 46*k
             for j2 in range(1,j):
                 v = xToY(i,j2,k,N)
                 Q[t,v] += 2*(k**2)
-                Q_qubo[(t,v)] += Q[t,v]
+                # if not( (t,v) in Q_qubo_quad.keys()):
+                #     Q_qubo_quad[(t,v)] = 0
+                # Q_qubo_quad[(t,v)] += 2*(k**2)
             for j2 in range(1,N-1):
                 for k2 in range(1,k):
                     v = xToY(i,j2,k2,N)
                     Q[t,v] += 2*k*k2
-                    Q_qubo[(t,v)] = Q[t,v]
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] = 2*k*k2
 
+print("bch nebdew fi d-wave ")
 
+solution, cost = tabu_search_qubo(Q,max_iter=1000)
+solution_list = list(solution)
+with open("FinalResult.txt","w") as file:
+    for t in solution_list:
+        file.write(str(int(t)))
+
+print(solution)
+
+# bqm = dimod.BinaryQuadraticModel(Q_qubo_linear,Q_qubo_quad,1200,dimod.BINARY)
+
+# sampler = TabuSampler()
+
+# results = sampler.sample(bqm, label="wind farm ")
+# #Returns Dictionary index by index
+# smbl = results.first.sample
+# Print results
+# with open("FinalResult.txt","w") as file:
+#     file.write(str(smbl))
+# print("kamalna")
