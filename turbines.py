@@ -15,34 +15,34 @@ turbines = []
 def dist(x,y,a,b):
     return math.sqrt((x-a)**2 + (y-b)**2)
 
+if __name__ == "__main__":
+    while True:
+        appending = True
+        if len(turbines) == n:
+            break
+        (x,y) = (random.random()*space,random.random()*space)
+        for j in turbines:
+            if dist(x,y,j[0],j[1]) <= tol:
+                appending = False
+        if appending:
+            turbines.append((x,y))
 
-while True:
-    appending = True
-    if len(turbines) == n:
-        break
-    (x,y) = (random.random()*space,random.random()*space)
-    for j in turbines:
-        if dist(x,y,j[0],j[1]) <= tol:
-            appending = False
-    if appending:
-        turbines.append((x,y))
+    turbines_x = []
+    turbines_y = []
+    for i in range(n):
+        turbines_x.append(turbines[i][0])
+        turbines_y.append(turbines[i][1])
 
-turbines_x = []
-turbines_y = []
-for i in range(n):
-    turbines_x.append(turbines[i][0])
-    turbines_y.append(turbines[i][1])
+    generator_x = [random.random()*space,random.random()*space]
+    generator_y = [random.random()*space,random.random()*space]
 
-generator_x = [random.random()*space,random.random()*space]
-generator_y = [random.random()*space,random.random()*space]
+    data = zip([i for i in range(n+gen)],turbines_x,turbines_y)
+    with open('Coordinates.csv', mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['i', 'x', 'y'])
+        writer.writerows(data)
 
-data = zip([i for i in range(n+gen)],turbines_x,turbines_y)
-with open('Coordinates.csv', mode='w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(['i', 'x', 'y'])
-    writer.writerows(data)
-
-plt.scatter(turbines_x,turbines_y)
-plt.scatter(generator_x,generator_y,color='red')
-plt.show()
+    plt.scatter(turbines_x,turbines_y)
+    plt.scatter(generator_x,generator_y,color='red')
+    plt.show()
         
