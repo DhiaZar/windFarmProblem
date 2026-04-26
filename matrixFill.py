@@ -157,11 +157,12 @@ if __name__ == "__main__":
     print("best energy:", response.first.energy)
     print("sample size:", len(response.first.sample))
     sample = response.first.sample  
-    n = 9216
-    x = [sample[i] for i in range(n)]
-    with open("x_vector.csv", "w", newline="") as f:
+    with open("solution_labeled.csv", "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(x)
+        writer.writerow(["index", "value"])
+
+        for i in sorted(sample.keys()):
+            writer.writerow([i, sample[i]])
     # sampler = TabuSampler()
 
     # results = sampler.sample(bqm, label="wind farm ")
