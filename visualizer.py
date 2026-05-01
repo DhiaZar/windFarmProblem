@@ -57,7 +57,8 @@ def load_coordinates(filename):
             x = float(row[1])
             y = float(row[2])
             coords[idx] = (x, y)
-    coords_subset = dict(list(coords.items())[:N+1])
+    coords_subset = dict(list(coords.items())[:N])
+    # print(coords_subset)
     return coords_subset
 
 
@@ -75,6 +76,7 @@ if __name__ == "__main__":
     for i in range (len(x_vec)):
         if x_vec[i]!=0:
             sum+=(yToX(i,N)[2])
+            print(f"Cable from {yToX(i,N)[0]} to {yToX(i,N)[1]} with width {yToX(i,N)[2]}")
     print("Sum of x:", sum)
     print("Turbines loaded:", len(coords))
 
@@ -90,8 +92,6 @@ if __name__ == "__main__":
             if i != j:
                 edges.append((i, j, k))
                 print(i,j,k)
-            else :
-                print(f"ERROR{i,j}")
 
 
     print("Active edges:", len(edges))
@@ -156,4 +156,4 @@ if __name__ == "__main__":
         plt.plot([], [], color=color, label=f"k={k}")
     plt.legend()
 
-    plt.show()
+    # plt.show()

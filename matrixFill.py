@@ -2,7 +2,7 @@ from math import floor
 import numpy as np
 from turbines import dist
 import dimod
-from dwave.samplers import TabuSampler
+# from dwave.samplers import TabuSampler
 from claudeQUBOTabu import *
 from dwave_qbsolv import QBSolv
 import neal
@@ -21,8 +21,9 @@ def xToY(i,j,k,n):
 
 
 if __name__ == "__main__":
-    N = 48
-    L = 100
+    N = 6
+    L = [500 , 500 , 5000, 1000, 1000] # Each element corresponds to a penalty function
+    # L[0] corresponds to first collector, L[1] to the second and L[2] to inter-turbine connections and L[3] for the sum of connections
     Q = np.zeros((N*N*4,N*N*4))
     D = np.zeros((N,N))
     Q_qubo_linear = {}
@@ -36,26 +37,30 @@ if __name__ == "__main__":
                 continue
             distance_dict[int(tuple_elem[0])] = (float(tuple_elem[1]),float(tuple_elem[2]))
 
-    for i in range(len(distance_dict)):
-        for j in range(len(distance_dict)):
+    for i in range(N):
+        for j in range(N):
             D[i,j] = dist(distance_dict[i][0],distance_dict[i][1],distance_dict[j][0],distance_dict[j][1])
 
 
     cost = {1:500,2:700,3:900,4:1100}
+    L1 = L[0]
+    L2 = L[1]
+    L3 = L[2]
+    L4 = L[3]
     print("bch nebdew n3amrou fel dict ")
     for i in range(1,N+1):
         for j in range(1,N+1):
             for k in range(1,5):
                 t = xToY(i,j,k,N)
-                Q[t,t] += cost[k] * D[i-1,j-1] + L * (k**2) - 2*L*k
-                if not(t in Q_qubo_linear.keys()):
-                    Q_qubo_linear[t] = 0
-                Q_qubo_linear[t] += cost[k] * D[i-1,j-1] + L * (k**2) - 2*L*k
+                Q[t,t] += cost[k] * D[i-1,j-1] + int(L3) * (k**2) - 2*L3*k
+                # if not(t in Q_qubo_linear.keys()):
+                #     Q_qubo_linear[t] = 0
+                # Q_qubo_linear[t] += cost[k] * D[i-1,j-1] + int(L3) * (k**2) - 2*L3*k
                 v = xToY(j,i,k,N)
-                Q[v,v] += L * (k**2) + 2*L*k
-                if not(v in Q_qubo_linear.keys()):
-                    Q_qubo_linear[v] = 0
-                Q_qubo_linear[v] += L * (k**2) + 2*L*k
+                Q[v,v] += int(L3) * (k**2) + 2*int(L3)*k
+                # if not(v in Q_qubo_linear.keys()):
+                #     Q_qubo_linear[v] = 0
+                # Q_qubo_linear[v] += int(L3) * (k**2) + 2*int(L3)*k
 
     for i in range(1,N+1):
         for k in range(1,5):
@@ -63,16 +68,16 @@ if __name__ == "__main__":
                 for j2 in range(1,j):
                     t = xToY(i,j,k,N)
                     v = xToY(i,j2,k,N)
-                    Q[t,v] += 2*L*(k**2)
-                    if not( (t,v) in Q_qubo_quad.keys()):
-                        Q_qubo_quad[(t,v)] = 0
-                    Q_qubo_quad[(t,v)] += 2*L*(k**2)
+                    Q[t,v] += 2*int(L3)*(k**2)
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2*int(L3)*(k**2)
                     t = xToY(j,i,k,N)
                     v = xToY(j2,i,k,N)
-                    Q[t,v] += 2*L*(k**2)
-                    if not( (t,v) in Q_qubo_quad.keys()):
-                        Q_qubo_quad[(t,v)] = 0
-                    Q_qubo_quad[(t,v)] += 2*L*(k**2)
+                    Q[t,v] += 2*L3*(k**2)
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2*int(L3)*(k**2)
 
     for i in range(1,N+1):
         for j in range(1,N+1):
@@ -81,16 +86,16 @@ if __name__ == "__main__":
                     for k2 in range(1,k):
                         t = xToY(i,j,k,N)
                         v = xToY(i,j2,k2,N)
-                        Q[t,v] += 2* L * k*k2
-                        if not( (t,v) in Q_qubo_quad.keys()):
-                            Q_qubo_quad[(t,v)] = 0
-                        Q_qubo_quad[(t,v)] += 2* L * k*k2
+                        Q[t,v] += 2* int(L3) * k*k2
+                        # if not( (t,v) in Q_qubo_quad.keys()):
+                        #     Q_qubo_quad[(t,v)] = 0
+                        # Q_qubo_quad[(t,v)] += 2* int(L3) * k*k2
                         t = xToY(j,i,k,N)
                         v = xToY(j2,i,k,N)
-                        Q[t,v] += 2*L*(k*k2)
-                        if not( (t,v) in Q_qubo_quad.keys()):
-                            Q_qubo_quad[(t,v)] = 0
-                        Q_qubo_quad[(t,v)] += 2*L*(k*k2)
+                        Q[t,v] += 2*int(L3)*(k*k2)
+                        # if not( (t,v) in Q_qubo_quad.keys()):
+                        #     Q_qubo_quad[(t,v)] = 0
+                        # Q_qubo_quad[(t,v)] += 2*int(L3)*(k*k2)
 
     for i in range(1,N+1):
         for j in range(1,N+1):
@@ -99,34 +104,92 @@ if __name__ == "__main__":
                     for k2 in range(1,5):
                         t = xToY(i,j,k,N)
                         v = xToY(i,j2,k2,N)
-                        Q[t,v] -= 2 * L * k * k2
-                        if not( (t,v) in Q_qubo_quad.keys()):
-                            Q_qubo_quad[(t,v)] = 0
-                        Q_qubo_quad[(t,v)] -= 2 * L * k * k2
+                        Q[t,v] -= 2 * int(L3) * k * k2
+                        # if not( (t,v) in Q_qubo_quad.keys()):
+                        #     Q_qubo_quad[(t,v)] = 0
+                        # Q_qubo_quad[(t,v)] -= 2 * int(L3) * k * k2
 
     for i in range(N-1,N+1):
+        c = 0 if i == N -1 else 1
         for k in range(1,5):
             for j in range(1,N-1):
                 t = xToY(i,j,k,N)
-                Q[t,t] += k**2 - 46*k
-                if not( (t,v) in Q_qubo_quad.keys()):
-                    Q_qubo_quad[(t,v)] = 0
-                Q_qubo_quad[(t,t)] += k**2 - 46*k
+                Q[t,t] += (k**2 - 46*k) * int(L[c])
+                # if not( (t,v) in Q_qubo_quad.keys()):
+                #     Q_qubo_quad[(t,v)] = 0
+                # Q_qubo_quad[(t,t)] += int(L[c]) * (k**2 - 46*k)
                 for j2 in range(1,j):
                     v = xToY(i,j2,k,N)
-                    Q[t,v] += 2*(k**2)
-                    if not( (t,v) in Q_qubo_quad.keys()):
-                        Q_qubo_quad[(t,v)] = 0
-                    Q_qubo_quad[(t,v)] += 2*(k**2)
+                    Q[t,v] += 2*(k**2) * int(L[c])
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #     Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2*(k**2) * int(L[c])
                 for j2 in range(1,N-1):
                     for k2 in range(1,k):
                         v = xToY(i,j2,k2,N)
-                        Q[t,v] += 2*k*k2
-                        if not( (t,v) in Q_qubo_quad.keys()):
-                            Q_qubo_quad[(t,v)] = 0
-                        Q_qubo_quad[(t,v)] = 2*k*k2
+                        Q[t,v] += 2*k*k2 * int(L[c])
+                        # if not( (t,v) in Q_qubo_quad.keys()):
+                        #     Q_qubo_quad[(t,v)] = 0
+                        # Q_qubo_quad[(t,v)] = 2*k*k2 * int(L[c])
 
-    print("bch nebdew fi d-wave ")
+    #The fourth penalty (sum_i,j,k k * x_ijk = 46)
+    for i in range(1,N+1):
+        for j in range(1,N+1):
+            for k in range(1,5):
+                t = xToY(i,j,k,N)
+                # if not( (t,t) in Q_qubo_quad.keys()):
+                #     Q_qubo_quad[(t,t)] = 0
+                # Q_qubo_quad[(t,t)] += L4 * ((k ** 2) - 2*(N-2)*k)  
+                Q[t,t] += L4 * (1 - 2*(N-2))
+
+    for i in range(1,N+1):
+        for j in range(1,N+1):
+            for k in range(1,5):
+                for k2 in range(1,k):
+                    t = xToY(i,j,k,N)
+                    v = xToY(i,j,k2,N)
+                    # if not( (t,v) in Q_qubo_quad.keys()):
+                    #         Q_qubo_quad[(t,v)] = 0
+                    # Q_qubo_quad[(t,v)] += 2*k*k2*L4    
+                    Q[t,v] += 2*L4
+    
+    for i in range(1,N+1):
+        for j in range(1,N+1):
+            for j2 in range(1,j):
+                for k in range(1,5):
+                    for k2 in range(1,5):
+                        t = xToY(i,j,k,N)
+                        v = xToY(i,j2,k2,N)
+                        # if not( (t,v) in Q_qubo_quad.keys()):
+                        #     Q_qubo_quad[(t,v)] = 0
+                        # Q_qubo_quad[(t,v)] += k*k2*L4
+                        Q[t,v] += L4
+    for i in range(1,N+1):
+        for i2 in range(1,i):
+            for j in range(1,N+1):
+                for j2 in range(1,N+1):
+                    for k in range(1,5):
+                        for k2 in range(1,5):
+                            t = xToY(i,j,k,N)
+                            v = xToY(i2,j2,k2,N)
+                            # if not( (t,v) in Q_qubo_quad.keys()):
+                            #     Q_qubo_quad[(t,v)] = 0  
+                            # Q_qubo_quad[(t,v)] += 2 * k * k2 * L4
+                            Q[t,v] += 2 * L4
+
+
+    #Fifth penalty x_ii = 0
+    for i in range(1,N+1):
+        for k in range(1,5):
+            t = xToY(i,i,k,N)
+            Q[t,t] += L[4]
+
+    # tranform Q into upper triangular
+    Q_new = np.triu(Q) + np.diag(np.diag(Q)) + np.triu(np.transpose(Q))
+    # print(np.diag(np.diag(Q)))
+    Q = Q_new
+    # print(Q)
+    print("bch nebdew fi normalization ")
     Q_dict = {}
 
     n = Q.shape[0]
@@ -146,6 +209,7 @@ if __name__ == "__main__":
     print("min:", min(vals))
     print("max:", max(vals))
     print("nonzero count:", sum(v != 0 for v in vals))
+    print("bch nebdew fel Dwave")
     subqubo_size = 50
     sampler = neal.SimulatedAnnealingSampler()
     response = QBSolv().sample_qubo(
