@@ -2,7 +2,7 @@ from math import floor
 import numpy as np
 from turbines import dist
 import dimod
-# from dwave.samplers import TabuSampler
+from dwave.samplers import SimulatedAnnealingSampler
 from claudeQUBOTabu import *
 from dwave_qbsolv import QBSolv
 import neal
@@ -22,8 +22,14 @@ def xToY(i,j,k,n):
 
 if __name__ == "__main__":
     N = 6
-    L = [500 , 500 , 5000, 1000, 1000] # Each element corresponds to a penalty function
-    # L[0] corresponds to first collector, L[1] to the second and L[2] to inter-turbine connections and L[3] for the sum of connections
+    L = [500 , 500 , 500, 500, 100] # Each element corresponds to a penalty function
+    '''
+    L[0] corresponds to first collector, 
+    L[1] to the second  
+    L[2] to inter-turbine connections
+    L[3] for the sum of connections 
+    L[4] for no-loop to self
+    ''' 
     Q = np.zeros((N*N*4,N*N*4))
     D = np.zeros((N,N))
     Q_qubo_linear = {}
@@ -40,9 +46,11 @@ if __name__ == "__main__":
     for i in range(N):
         for j in range(N):
             D[i,j] = dist(distance_dict[i][0],distance_dict[i][1],distance_dict[j][0],distance_dict[j][1])
-
-
+    for i in range(N):
+        D[i,i] = N**2 * np.max(D)
     cost = {1:500,2:700,3:900,4:1100}
+    # L[4] = cost[4] * np.max(D) * 2
+    print(f"no self loop lambda : {L[4]}")
     L1 = L[0]
     L2 = L[1]
     L3 = L[2]
@@ -52,12 +60,15 @@ if __name__ == "__main__":
         for j in range(1,N+1):
             for k in range(1,5):
                 t = xToY(i,j,k,N)
-                Q[t,t] += cost[k] * D[i-1,j-1] + int(L3) * (k**2) - 2*L3*k
+                Q[t,t] += cost[k] * D[i-1,j-1]
+                if((i != N-1 and i != N) and (j != N-1 and j!= N)):
+                    Q[t,t] += int(L3) * (k**2) - 2*L3*k
                 # if not(t in Q_qubo_linear.keys()):
                 #     Q_qubo_linear[t] = 0
                 # Q_qubo_linear[t] += cost[k] * D[i-1,j-1] + int(L3) * (k**2) - 2*L3*k
                 v = xToY(j,i,k,N)
-                Q[v,v] += int(L3) * (k**2) + 2*int(L3)*k
+                if((i != N-1 and i != N) and (j != N-1 and j!= N)):
+                    Q[v,v] += int(L3) * (k**2) + 2*int(L3)*k
                 # if not(v in Q_qubo_linear.keys()):
                 #     Q_qubo_linear[v] = 0
                 # Q_qubo_linear[v] += int(L3) * (k**2) + 2*int(L3)*k
@@ -68,12 +79,14 @@ if __name__ == "__main__":
                 for j2 in range(1,j):
                     t = xToY(i,j,k,N)
                     v = xToY(i,j2,k,N)
+                    #if((i != N-1 and i != N) and (j != N-1 and j!= N)):
                     Q[t,v] += 2*int(L3)*(k**2)
                     # if not( (t,v) in Q_qubo_quad.keys()):
                     #     Q_qubo_quad[(t,v)] = 0
                     # Q_qubo_quad[(t,v)] += 2*int(L3)*(k**2)
                     t = xToY(j,i,k,N)
                     v = xToY(j2,i,k,N)
+                    #if((i != N-1 and i != N) and (j != N-1 and j!= N)):
                     Q[t,v] += 2*L3*(k**2)
                     # if not( (t,v) in Q_qubo_quad.keys()):
                     #     Q_qubo_quad[(t,v)] = 0
@@ -189,6 +202,11 @@ if __name__ == "__main__":
     # print(np.diag(np.diag(Q)))
     Q = Q_new
     # print(Q)
+    print("number of zeros in diagonal")
+    sum_diag = 0
+    for i in range(len(Q)):
+        sum_diag += 1 if Q[i,i] == 1 else 0
+    print(f"there is {sum_diag} non-zero values in diagonal")
     print("bch nebdew fi normalization ")
     Q_dict = {}
 
@@ -211,7 +229,8 @@ if __name__ == "__main__":
     print("nonzero count:", sum(v != 0 for v in vals))
     print("bch nebdew fel Dwave")
     subqubo_size = 50
-    sampler = neal.SimulatedAnnealingSampler()
+    # sampler = neal.SimulatedAnnealingSampler()
+    sampler = SimulatedAnnealingSampler()
     response = QBSolv().sample_qubo(
         Q_norm,
         solver=sampler,
