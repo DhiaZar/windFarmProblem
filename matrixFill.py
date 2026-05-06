@@ -7,6 +7,7 @@ from claudeQUBOTabu import *
 from dwave_qbsolv import QBSolv
 import neal
 import csv
+from Create_Qubo_File import matrix_to_qubo
 
 def yToX(t,n):
     i = floor(t/n) % n + 1
@@ -218,12 +219,13 @@ if __name__ == "__main__":
                 Q_dict[(i, j)] = float(Q[i, j])
     vals = list(Q_dict.values())
     max_abs = max(abs(v) for v in Q_dict.values())
-
     Q_norm = {
         k: v / max_abs
         for k, v in Q_dict.items()
     }
+    Q = Q/np.max(Q)
     vals = list(Q_norm.values())
+    matrix_to_qubo(Q)
     print("min:", min(vals))
     print("max:", max(vals))
     print("nonzero count:", sum(v != 0 for v in vals))

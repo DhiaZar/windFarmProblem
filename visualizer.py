@@ -156,4 +156,4 @@ if __name__ == "__main__":
         plt.plot([], [], color=color, label=f"k={k}")
     plt.legend()
 
-    # plt.show()
+    plt.show()
