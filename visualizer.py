@@ -1,11 +1,10 @@
 import csv
 import matplotlib.pyplot as plt
 from math import floor
-
+from matrixFill import N
 # =========================
 # PARAMETERS
 # =========================
-N = 6
 TOTAL_VARS = N * N * 4
 
 SOLUTION_FILE = "solution_labeled.csv"
@@ -29,7 +28,6 @@ def xToY(i,j,k,n):
 # =========================
 def load_sample_from_csv(filename, n_vars):
     sample = {}
-
     with open(filename, "r") as f:
         reader = csv.reader(f)
         next(reader)  # skip header
@@ -53,12 +51,12 @@ def load_coordinates(filename):
         next(reader)  # skip header
 
         for row in reader:
-            idx = int(row[0])
+            idx = int(row[0]) + 1
             x = float(row[1])
             y = float(row[2])
             coords[idx] = (x, y)
     coords_subset = dict(list(coords.items())[:N])
-    # print(coords_subset)
+    print(coords_subset)
     return coords_subset
 
 
@@ -121,7 +119,7 @@ if __name__ == "__main__":
 
     # label turbines (optional)
     for i in coords:
-        plt.text(coords[i][0], coords[i][1], str(i), fontsize=8)
+        plt.text(coords[i][0], coords[i][1], str(i), fontsize=24)
 
 
     # --- plot directed edges ---
