@@ -22,14 +22,15 @@ def xToY(i,j,k,n):
 
 
 if __name__ == "__main__":
-    N = 6
-    L = [500 , 500 , 500, 500, 100] # Each element corresponds to a penalty function
+    N = 10
+    L = [1200 , 1200 , 1700, 5000, 100, 1500000] # Each element corresponds to a penalty function
     '''
     L[0] corresponds to first collector, 
     L[1] to the second  
     L[2] to inter-turbine connections
     L[3] for the sum of connections 
     L[4] for no-loop to self
+    L[5] for one cable per pair
     ''' 
     Q = np.zeros((N*N*4,N*N*4))
     D = np.zeros((N,N))
@@ -197,6 +198,17 @@ if __name__ == "__main__":
         for k in range(1,5):
             t = xToY(i,i,k,N)
             Q[t,t] += L[4]
+
+    #Sixth penalty (at most one cable per pair)
+    for i in range(1,N+1):
+        for j in range(1,N+1):
+            for k in range(1,5):
+                for k2 in range(1,k):
+                    t = xToY(i,j,k,N)
+                    v = xToY(i,j,k2,N)
+                    Q[t,v] += L[5]
+
+
 
     # tranform Q into upper triangular
     Q_new = np.triu(Q) + np.diag(np.diag(Q)) + np.triu(np.transpose(Q))
