@@ -61,7 +61,7 @@ def solve(N,L):
         solver_limit=50,
         num_repeats=20   # VERY important
     )
-    print("best energy:", response.first.energy)
+    # print("best energy:", response.first.energy)
     # print("sample size:", len(response.first.sample))
     sample = response.first.sample  
     with open("solution_labeled.csv", "w", newline="") as f:
