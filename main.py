@@ -6,8 +6,9 @@ from claudeQUBOTabu import *
 from dwave_qbsolv import QBSolv
 import csv
 from Create_Qubo_File import matrix_to_qubo
-from matrixFill import Solve
-from matrixFill import N
+from solving import solve
+# from solving import N
+from visualizer import visualize
 
 def yToX(t,n):
     i = floor(t/n) % n + 1
@@ -24,9 +25,16 @@ def penalty_check(sample, N):
     Customize this to your constraints.
     """
     sum_weighted_cables = 0
+    sum_weighted_cables_score = 0
     sum_connections_gen_1 = 0
+    sum_connections_gen1_score = 0
     sum_connections_gen_2 = 0
+    sum_connections_gen2_score = 0
     connected=set()
+
+    self_connect_score = 0
+
+
     for t in range(len(sample)):
         i,j,k = yToX(t,N)
         if sample[t] == 1 :
@@ -44,15 +52,31 @@ def penalty_check(sample, N):
                 print(f"Unverified : Self Loop {i}")
     for i in range(1,N+1):
         if i not in connected :
-            print(f"Unverified : Node not connected {i}")
+            self_connect_score += 1
+            # print(f"Unverified : Node not connected {i}")
 
     if sum_weighted_cables != N-2 :
-        print(f"Unverified : sum_weighted_cables = {sum_weighted_cables}")
+        # print(f"Unverified : sum_weighted_cables = {sum_weighted_cables}")
+        sum_weighted_cables_score = (sum_weighted_cables - (N-2)) * (N**2)
     if sum_connections_gen_1 != (N-2)/2:
-        print(f"Unverified : sum_connections_gen_1 = {sum_connections_gen_1}")
+        # print(f"Unverified : sum_connections_gen_1 = {sum_connections_gen_1}")
+        sum_connections_gen1_score = (sum_connections_gen_1 - (N-2)/2) * (N**2)
     if sum_connections_gen_2 != (N-2)/2:
-        print(f"Unverified : sum_connections_gen_2 = {sum_connections_gen_2}")
+        # print(f"Unverified : sum_connections_gen_2 = {sum_connections_gen_2}")
+        sum_connections_gen2_score = (sum_connections_gen_2 - (N-2)/2) * (N**2)
 
+    return sum_connections_gen1_score,sum_connections_gen2_score,sum_weighted_cables_score
+
+#Initializing
 L = [1200 , 1200, 5000, 5000, 100, 150000]
-sample = Solve(N , L)
-penalty_check(sample , N)
+n_iterations = 10
+N = 6
+for __ in range(n_iterations):
+    sample = solve(N , L)
+    l1,l2,l3 = penalty_check(sample , N)
+    L[0] -= l1
+    L[1] -= l2
+    L[2] -= l3
+    L[3] -= l3
+    print(f"Intermediarie penalties {L}")
+visualize(N)

@@ -1,11 +1,9 @@
 import csv
 import matplotlib.pyplot as plt
 from math import floor
-from matrixFill import N
 # =========================
 # PARAMETERS
 # =========================
-TOTAL_VARS = N * N * 4
 
 SOLUTION_FILE = "solution_labeled.csv"
 COORD_FILE = "Coordinates.csv"
@@ -43,7 +41,7 @@ def load_sample_from_csv(filename, n_vars):
 # =========================
 # LOAD COORDINATES
 # =========================
-def load_coordinates(filename):
+def load_coordinates(filename,N):
     coords = {}
 
     with open(filename, "r") as f:
@@ -56,27 +54,27 @@ def load_coordinates(filename):
             y = float(row[2])
             coords[idx] = (x, y)
     coords_subset = dict(list(coords.items())[:N])
-    print(coords_subset)
+    # print(coords_subset)
     return coords_subset
 
 
 # =========================
 # MAIN
 # =========================
-if __name__ == "__main__":
-
+def visualize(N):
+    TOTAL_VARS = N * N * 4
     # --- load data ---
     x_vec = load_sample_from_csv(SOLUTION_FILE, TOTAL_VARS)
-    coords = load_coordinates(COORD_FILE)
+    coords = load_coordinates(COORD_FILE,N)
 
-    print("Vector size:", len(x_vec))
+    # print("Vector size:", len(x_vec))
     sum=0
     for i in range (len(x_vec)):
         if x_vec[i]!=0:
             sum+=(yToX(i,N)[2])
             print(f"Cable from {yToX(i,N)[0]} to {yToX(i,N)[1]} with width {yToX(i,N)[2]}")
-    print("Sum of x:", sum)
-    print("Turbines loaded:", len(coords))
+    # print("Sum of x:", sum)
+    # print("Turbines loaded:", len(coords))
 
 
     # =========================
@@ -89,7 +87,7 @@ if __name__ == "__main__":
             i, j, k = yToX(t, N)
             if i != j:
                 edges.append((i, j, k))
-                print(i,j,k)
+                # print(i,j,k)
 
 
     print("Active edges:", len(edges))
