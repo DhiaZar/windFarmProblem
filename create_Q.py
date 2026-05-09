@@ -38,7 +38,7 @@ def create_Q(N,L):
             D[i,j] = dist(distance_dict[i][0],distance_dict[i][1],distance_dict[j][0],distance_dict[j][1])
     for i in range(N):
         D[i,i] = N**2 * np.max(D)
-    cost = {1:500,2:700,3:900,4:1100}
+    cost = {1:100,2:100,3:100,4:100}
     
     for i in range(1,N+1):
         for j in range(1,N+1):
@@ -163,6 +163,6 @@ def create_Q(N,L):
 
 
     # tranform Q into upper triangular
-    Q_new = np.triu(Q) + np.diag(np.diag(Q)) + np.triu(np.transpose(Q))
+    Q_new = np.triu(Q) + np.diag(np.diag(Q)) # + np.triu(np.transpose(Q))
     Q_new = Q_new / np.max(Q_new)
     return Q_new

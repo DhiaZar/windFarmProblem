@@ -69,10 +69,18 @@ def penalty_check(sample, N):
     return sum_connections_gen1_score,sum_connections_gen2_score,sum_weighted_cables_score, not_connect_score
 
 #Initializing
-L = [1 , 1, 1, 1, 100, 150000]
+L = [100 , 100, 0, 0, 0, 0]
+'''
+    L[0] corresponds to first collector, 
+    L[1] to the second  
+    L[2] to inter-turbine connections
+    L[3] for the sum of connections 
+    L[4] for no-loop to self
+    L[5] for one cable per pair
+''' 
 n_iterations = 100
 N = 6
-for __ in range(n_iterations):
+'''for __ in range(n_iterations):   
     sample = solve(N , L)
     l1,l2,l3,l4 = penalty_check(sample , N)
     print(l1,l2,l3)
@@ -81,4 +89,6 @@ for __ in range(n_iterations):
     L[2] = L[2] * l3
     # L[3] = L[3] + l4
     # print(f"Intermediarie penalties {L}")
+'''
+sample = solve(N,L)
 visualize(N)

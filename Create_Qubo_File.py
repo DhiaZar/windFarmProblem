@@ -24,4 +24,4 @@ def matrix_to_qubo(Q, filename="output.qubo", topology="0"):
         for i, j, val in couplers:
             f.write(f"{i} {j} {val}\n")
 
-    print(f"QUBO file written to {filename}")
+    # print(f"QUBO file written to {filename}")
