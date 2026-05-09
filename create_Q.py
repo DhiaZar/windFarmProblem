@@ -46,7 +46,7 @@ def create_Q(N,L):
                 t = xToY(i,j,k,N)
                 Q[t,t] += cost[k] * D[i-1,j-1]
                 if i != N-1 and i != N:
-                    Q[t,t] += L[2] * (k**2) - 2*L[2]*k
+                    Q[t,t] += L[2] * (k**2) - 2*L[2]*k + L[5]
                
                 v = xToY(j,i,k,N)
                 if i != N-1 and i != N:
@@ -107,7 +107,7 @@ def create_Q(N,L):
                         Q[t,v] += 2*k*k2 * int(L[c])
                         
 
-    #The fourth penalty (sum_i,j,k k * x_ijk = 46)
+    #The fourth penalty (sum_i,j,k x_ijk = 46)
     for i in range(1,N+1):
         for j in range(1,N+1):
             for k in range(1,5):
